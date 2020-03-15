@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0ddde6f2-f483-4331-a2c7-0e94336a3d7c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/4635_lab1.py" beforeDir="false" afterPath="$PROJECT_DIR$/4635_lab1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,10 +91,10 @@
       <screen x="0" y="0" width="1280" height="984" />
     </state>
     <state x="141" y="123" key="SettingsEditor/0.0.1280.984@0.0.1280.984" timestamp="1584210743187" />
-    <state x="341" y="314" key="com.intellij.ide.util.TipDialog" timestamp="1584210216657">
+    <state x="341" y="314" key="com.intellij.ide.util.TipDialog" timestamp="1584303524623">
       <screen x="0" y="0" width="1280" height="984" />
     </state>
-    <state x="341" y="314" key="com.intellij.ide.util.TipDialog/0.0.1280.984@0.0.1280.984" timestamp="1584210216657" />
+    <state x="341" y="314" key="com.intellij.ide.util.TipDialog/0.0.1280.984@0.0.1280.984" timestamp="1584303524623" />
     <state x="449" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1584210451670">
       <screen x="0" y="0" width="1280" height="984" />
     </state>

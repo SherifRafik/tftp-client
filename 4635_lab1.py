@@ -10,6 +10,7 @@ BUFFER_SIZE = 2048
 
 TOTAL, USED, FREE = shutil.disk_usage("/")
 
+
 class TftpProcessor(object):
     """
     Implements logic for a TFTP client.
@@ -314,6 +315,7 @@ def get_arg(param_index, default=None):
                 f"[FATAL] The comamnd-line argument #[{param_index}] is missing")
             exit(-1)  # Program execution failed.
 
+
 def tftp_logic(tftp, packet, client_socket, server_address):
     # Send the first packet according to the user input, WRQ or RRQ
     send_packet(packet, client_socket, server_address)
@@ -346,8 +348,6 @@ def tftp_logic(tftp, packet, client_socket, server_address):
     print(address, server_address)
 
 
-
-
 def main():
     print("*" * 50)
     print("[LOG] Printing command line arguments\n", ",".join(sys.argv))
@@ -378,5 +378,6 @@ def main():
     # Call the main method
     tftp_logic(tftp, packet, client_socket, server_address)
     
+
 if __name__ == "__main__":
     main()
