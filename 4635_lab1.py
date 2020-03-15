@@ -10,11 +10,6 @@ BUFFER_SIZE = 2048
 
 TOTAL, USED, FREE = shutil.disk_usage("/")
 
-print("Total: %d GiB" % (TOTAL // (2 ** 30)))
-print("Used: %d GiB" % (USED // (2 ** 30)))
-print("Free: %d GiB" % (FREE // (2 ** 30)))
-
-
 class TftpProcessor(object):
     """
     Implements logic for a TFTP client.
@@ -168,9 +163,8 @@ class TftpProcessor(object):
         # After receiving an ACK packet we create a DATA packet
         data = self.file.read(self.DEFAULT_DATA_SIZE)
         
-        if len(data) == 0:
+        if len(data) < self.DEFAULT_DATA_SIZE:
             self.is_done = True
-            return None
 
         self.current_block_count += 1
         output_packet = self._make_data_packet(block_number + 1, data)
@@ -320,6 +314,39 @@ def get_arg(param_index, default=None):
                 f"[FATAL] The comamnd-line argument #[{param_index}] is missing")
             exit(-1)  # Program execution failed.
 
+def tftp_logic(tftp, packet, client_socket, server_address):
+    # Send the first packet according to the user input, WRQ or RRQ
+    send_packet(packet, client_socket, server_address)
+
+    while not tftp.is_done:
+        # receive packet from the server (ack / data)
+        input_packet, address = receive_packet(client_socket, BUFFER_SIZE)
+        # Create a new packet according to the packet received from the server
+        tftp.process_udp_packet(input_packet, address)
+        output_packet = tftp.get_next_output_packet()
+        # Check if the output packet is not none and send it 
+        # None if no more packets needs to be send
+        send_packet(output_packet, client_socket, address)
+        '''
+        Check if the output_packet is an error packet
+        and if so terminate the connection because the server (tftp software)
+        doesn't terminate on its own 
+        '''
+        opcode = tftp._get_opcode(output_packet)
+        if opcode == tftp.TftpPacketType.ERROR.value:
+            error_code = tftp._get_error_code(output_packet)
+            print(str(error_code) + " : " + tftp.ERROR_MSG[error_code])
+            sys.exit(error_code)
+
+    if tftp.upload:
+        # To make sure the last ack packet is received
+        input_packet, address = receive_packet(client_socket, BUFFER_SIZE)       
+    
+    tftp.file.close()
+    print(address, server_address)
+
+
+
 
 def main():
     print("*" * 50)
@@ -348,30 +375,8 @@ def main():
     # Open the file according to the user input (Reading or Writing)
     tftp._open_file(file_name)
 
-    # Send the first packet according to the user input, WRQ or RRQ
-    send_packet(packet, client_socket, server_address)
-
-    while not tftp.is_done:
-        # receive packet from the server (ack / data)
-        input_packet, address = receive_packet(client_socket, BUFFER_SIZE)
-        tftp.process_udp_packet(input_packet, address)
-        # Create a new packet according to the packet received from the server
-        output_packet = tftp.get_next_output_packet()
-        # Send the new packet
-        if output_packet != None:
-            send_packet(output_packet, client_socket, address)
-            '''
-            Check if the output_packet is an error packet
-            and if so terminate the connection because the server (tftp software)
-            doesn't terminate on its own 
-            '''
-            opcode = tftp._get_opcode(output_packet)
-            if opcode == tftp.TftpPacketType.ERROR.value:
-                error_code = tftp._get_error_code(output_packet)
-                print(str(error_code) + " : " + tftp.ERROR_MSG[error_code])
-                sys.exit(error_code)
-    tftp.file.close()
-    print(address, server_address)
+    # Call the main method
+    tftp_logic(tftp, packet, client_socket, server_address)
     
 if __name__ == "__main__":
     main()
