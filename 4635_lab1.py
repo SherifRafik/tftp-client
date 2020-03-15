@@ -59,7 +59,7 @@ class TftpProcessor(object):
         3: "Disk full or allocation exceeded.",  # Used
         4: "Illegal TFTP operation.",  # Used
         5: "Unknown transfer ID.",
-        6: "File already exists.",
+        6: "File already exists.", # Used
         7: "No such user."
     }
 
@@ -75,14 +75,21 @@ class TftpProcessor(object):
 
     def _open_file(self, file_name):
         if self.upload:
-            try:
+            # Check if the file the client wants to upload doesn't exist
+            if os.path.isfile(file_name):
                 self.file = open(file_name, "rb")
-            except:
+            else:
                 error_code = 1
                 print(str(error_code) + " : " + self.ERROR_MSG[error_code])
                 sys.exit(error_code)
         else:
-            self.file = open(file_name, "wb")
+            # Check if the file the client wants to download already exits
+            if not os.path.isfile(file_name):
+                self.file = open(file_name, "wb")
+            else:
+                error_code = 6
+                print(str(error_code) + " : " + self.ERROR_MSG[error_code])
+                sys.exit(error_code)
 
     def process_udp_packet(self, packet_data, packet_source):
         print(f"Received a packet from {packet_source}")
@@ -160,8 +167,10 @@ class TftpProcessor(object):
 
         # After receiving an ACK packet we create a DATA packet
         data = self.file.read(self.DEFAULT_DATA_SIZE)
-        if len(data) < self.DEFAULT_DATA_SIZE:
+        
+        if len(data) == 0:
             self.is_done = True
+            return None
 
         self.current_block_count += 1
         output_packet = self._make_data_packet(block_number + 1, data)
@@ -285,13 +294,13 @@ def receive_packet(client_socket, buffer_size):
 def parse_user_input(tftp, address, operation, file_name=None):
     if operation == "push":
         print(f"Attempting to upload [{file_name}]...")
-        packet = tftp.upload_file(file_name)
         tftp.upload = True
+        packet = tftp.upload_file(file_name)
         return packet
     elif operation == "pull":
         print(f"Attempting to download [{file_name}]...")
-        packet = tftp.request_file(file_name)
         tftp.upload = False
+        packet = tftp.request_file(file_name)
         return packet
     else:
         error_code = 4
@@ -336,11 +345,11 @@ def main():
     # Get the first packet according to the user input.
     packet = parse_user_input(tftp, ip_address, operation, file_name)
 
-    # Send the first packet according to the user input, WRQ or RRQ
-    send_packet(packet, client_socket, server_address)
-
     # Open the file according to the user input (Reading or Writing)
     tftp._open_file(file_name)
+
+    # Send the first packet according to the user input, WRQ or RRQ
+    send_packet(packet, client_socket, server_address)
 
     while not tftp.is_done:
         # receive packet from the server (ack / data)
@@ -349,18 +358,20 @@ def main():
         # Create a new packet according to the packet received from the server
         output_packet = tftp.get_next_output_packet()
         # Send the new packet
-        send_packet(output_packet, client_socket, address)
-        '''
-        Check if the output_packet is an error packet
-        and if so terminate the connection because the server (tftp software)
-        doesn't terminate on its own 
-        '''
-        opcode = tftp._get_opcode(output_packet)
-        if opcode == tftp.TftpPacketType.ERROR.value:
-            error_code = tftp._get_error_code(output_packet)
-            print(str(error_code) + " : " + tftp.ERROR_MSG[error_code])
-            sys.exit(error_code)
-
-
+        if output_packet != None:
+            send_packet(output_packet, client_socket, address)
+            '''
+            Check if the output_packet is an error packet
+            and if so terminate the connection because the server (tftp software)
+            doesn't terminate on its own 
+            '''
+            opcode = tftp._get_opcode(output_packet)
+            if opcode == tftp.TftpPacketType.ERROR.value:
+                error_code = tftp._get_error_code(output_packet)
+                print(str(error_code) + " : " + tftp.ERROR_MSG[error_code])
+                sys.exit(error_code)
+    tftp.file.close()
+    print(address, server_address)
+    
 if __name__ == "__main__":
     main()

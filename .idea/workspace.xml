@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0ddde6f2-f483-4331-a2c7-0e94336a3d7c" name="Default Changelist" comment="" />
+    <list default="true" id="0ddde6f2-f483-4331-a2c7-0e94336a3d7c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/4635_lab1.py" beforeDir="false" afterPath="$PROJECT_DIR$/4635_lab1.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
