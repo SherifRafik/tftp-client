@@ -210,7 +210,7 @@ class TftpProcessor(object):
             Create the data packet
             2 bytes     2 bytes      n bytes
             ----------------------------------
-            | Opcode |   Block #  |   Data     |
+            | Opcode |   Block #  |   Data    |
             ----------------------------------
         """
         data_packet = struct.pack("!HH{}s".format(len(data)), self.TftpPacketType.DATA.value, block_num, data)
